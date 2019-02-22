@@ -1,5 +1,30 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+  .container
+    .row
+      table.table.table-hover.table-bordered.table-sm
+        thead
+          tr
+            th SiteID
+            th Name
+            th GPS
+            th AirBox
+            th AdScreen
+            th Update
+            th Delete
+        tbody
+          each item in poles
+            tr(class='item-id-' + item._id, style="word-break:break-all")
+              td 
+                a(href='/pole/' + item._id, target='_self') #{item.siteId}
+              td #{item.siteName}
+              td [#{item.lon},#{item.lat}]
+              td #{item.airBox.id}
+              td #{item.adScreen.id}
+              td
+                a.btn.btn-sm.btn-info(href='/pole/update/' + item._id, roel='button', target='_self') Update
+              td
+                button.btn.btn-sm.btn-danger.del(data-id=item._id, type='button') Delete
+  script(src='/javascripts/admin.js')
+          

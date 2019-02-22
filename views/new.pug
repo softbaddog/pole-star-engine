@@ -1,0 +1,34 @@
+extends layout
+
+block content
+  .container
+    .row
+      .col-md-4
+        form.form-horizontal(method="POST", action="/pole")
+          input(name='pole[_id]', type="hidden", value=pole._id)
+
+          .form-group
+            label(for='inputSiteID') SiteID
+            input#inputSiteID.form-control(name='pole[siteId]',type='text',value=pole.siteId)
+
+          .form-group
+            label(for='inputSiteName') SiteName
+            input#inputSiteName.form-control(name='pole[siteName]',type='text',value=pole.siteName)
+
+          .form-group
+            label(for='inputLon') Longitude
+            input#inputLon.form-control(name='pole[lon]',type='text',value=pole.lon)
+          
+          .form-group
+            label(for='inputLat') Latitude
+            input#inputLat.form-control(name='pole[lat]',type='text',value=pole.lat)
+
+          .form-group
+            label(for='inputAirBox') AirBox
+            input#inputAirBox.form-control(name='airBox[id]',type='text',value=pole.airBox.id)
+          
+          .form-group
+            label(for='inputAdScreen') AdScreen
+            input#inputAdScreen.form-control(name='adScreen[id]',type='text',value=pole.adScreen.id)
+
+          button.btn.btn-primary(type = 'submit') Submit
