@@ -47,10 +47,10 @@ router.get('/pole/update/:id', function (req, res, next) {
 });
 
 router.post('/pole', function (req, res, next) {
+  console.log(req.body);
   var id = req.body.pole._id;
   var poleObj = req.body.pole;
   var _pole;
-  console.log(poleObj);
   if (id !== '') {
     Pole.findById(id, function (err, pole) {
       if (err) {
@@ -76,7 +76,9 @@ router.post('/pole', function (req, res, next) {
         id: req.body.airBox.id
       },
       adScreen: {
-        id: req.body.adScreen.id
+        id: req.body.adScreen.id,
+        city: req.body.adScreen.city,
+        station: req.body.adScreen.station
       }
     });
     _pole.save(function (err, doc) {
@@ -102,6 +104,29 @@ router.delete('/pole', function (req, res, next) {
       });
     }
   });
+});
+
+// Get busStation
+router.get('/busStation/:id', function (req, res) {
+  var id = req.params.id;
+  var pageNo = req.query.pageNo || 0;
+  var pageSize = req.query.pageSize || 4;
+  var maxShowBus = req.query.maxShowBus || 4;
+  var ratioDiff = req.query.ratioDiff || 25;
+  if (id) {
+    const bs = require('../libs/busStation');
+    bs.busStationInfo(id, pageNo, pageSize, maxShowBus, ratioDiff, res);
+  }
+});
+
+// Get weather
+router.get('/weather/:id', function (req, res) {
+  var id = req.params.id;
+  var futureDay = req.query.futureDay || 2;
+  if (id) {
+    const w = require('../libs/weather');
+    w.weatherInfo(id, futureDay, res);
+  }
 });
 
 module.exports = router;

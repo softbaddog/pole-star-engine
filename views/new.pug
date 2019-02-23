@@ -24,11 +24,21 @@ block content
             input#inputLat.form-control(name='pole[lat]',type='text',value=pole.lat)
 
           .form-group
-            label(for='inputAirBox') AirBox
-            input#inputAirBox.form-control(name='airBox[id]',type='text',value=pole.airBox.id)
+            label(for='inputAirBoxID') AirBoxID
+            input#inputAirBoxID.form-control(name='airBox[id]',type='text',value=pole.airBox.id)
           
           .form-group
-            label(for='inputAdScreen') AdScreen
-            input#inputAdScreen.form-control(name='adScreen[id]',type='text',value=pole.adScreen.id)
+            label(for='inputAdScreenID') AdScreenID
+            input#inputAdScreenID.form-control(name='adScreen[id]',type='text',value=pole.adScreen.id)
+          .form-group
+            label(for='inputAdScreenCity') City
+            select#inputAdScreenCity.form-control(name='adScreen[city]')
+              option(value="东莞") 东莞
+              option(value="深圳") 深圳
+          .form-group
+            label(for='inputAdScreenStation') Station
+            select#inputAdScreenStation.form-control(name='adScreen[station]')
+              option(value="21") G区
+              option(value="18") J区
 
           button.btn.btn-primary(type = 'submit') Submit

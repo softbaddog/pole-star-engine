@@ -1,3 +1,4 @@
+const moment = require('moment');
 const net = require('net');
 const Pole = require('../models/pole');
 
@@ -26,30 +27,26 @@ server.on('connection', function (socket) {
     const buf = Buffer.from(data, 'hex');
     console.log(buf);
     const id = buf.readUInt16BE(0);
-    console.log(id);
     Pole.findOne({
-          airBox: {
-            id: id
-          }
-        }, function (err, pole) {
-          if (!err) {
-            console.log(pole);
-            const realtime = {
-              "temperature": (buf.readInt16BE(TEMPERATURE_OFFSET) / 10).toFixed(1) + "℃",
-              "humidity": (buf.readInt16BE(HUMIDITY_OFFSET) / 10).toFixed(1) + "rh%",
-              "pressure": buf.readInt16BE(PRESSURE_OFFSET) + "hPa",
-              "noise": (buf.readInt16BE(NOISE_OFFSET) / 10).toFixed(1) + "db",
-              "wind-speed": (buf.readInt16BE(WIND_SPEED_OFFSET) / 10).toFixed(1) + "m/s",
-              "wind-direction": buf.readInt16BE(WIND_DIRECTION_OFFSET) + "°",
-              "pm25": (buf.readInt16BE(PM25_OFFSET)).toFixed(1) + "ug/m3"
-            };
-            console.log(JSON.stringify(realtime));
-          } else {
-            console.log(err);
-          }
-          console.log('xxxx');
+      "airBox.id": id
+    }, function (err, pole) {
+      if (!err) {
+        pole.airBox.realtime = {
+          "temperature": (buf.readInt16BE(TEMPERATURE_OFFSET) / 10).toFixed(1) + "℃",
+          "humidity": (buf.readInt16BE(HUMIDITY_OFFSET) / 10).toFixed(1) + "rh%",
+          "pressure": buf.readInt16BE(PRESSURE_OFFSET) + "hPa",
+          "noise": (buf.readInt16BE(NOISE_OFFSET) / 10).toFixed(1) + "db",
+          "wind-speed": (buf.readInt16BE(WIND_SPEED_OFFSET) / 10).toFixed(1) + "m/s",
+          "wind-direction": buf.readInt16BE(WIND_DIRECTION_OFFSET) + "°",
+          "pm25": (buf.readInt16BE(PM25_OFFSET)).toFixed(1) + "ug/m3"
+        };
+        pole.airBox.timestamp = moment().format();
+        console.log(JSON.stringify(pole.airBox));
+        pole.save();
+      } else {
+        console.log(err);
+      }
     });
-
     socket.write(Buffer.from(RET_SUCC_CODE, 'hex'));
   });
   socket.on('close', function () {

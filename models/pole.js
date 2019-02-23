@@ -16,13 +16,16 @@ var poleSchema = new Schema({
   },
   airBox: {
     id: String,
-    temperature: Number,
-    humidity: Number,
-    pressure: Number,
-    noise: Number,
-    windSpeed: Number,
-    windDirection: Number,
-    pm25: Number
+    realtime: {
+      "temperature": String,
+      "humidity": String,
+      "pressure": String,
+      "noise": String,
+      "wind-speed": String,
+      "wind-direction": String,
+      "pm25": String
+    },
+    timestamp: Date
   },
   adScreen: {
     id: String,
