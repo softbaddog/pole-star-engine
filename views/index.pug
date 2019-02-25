@@ -9,10 +9,10 @@ block content
             th SiteID
             th Name
             th GPS
-            th AirBoxID
-            th AdScreenID
-            th City
-            th Station
+            th NB-LEDs
+            th AirBox
+            th AdScreen
+            th Camera
             th Update
             th Delete
         tbody
@@ -22,10 +22,12 @@ block content
                 a(href='/pole/' + item._id, target='_self') #{item.siteId}
               td #{item.siteName}
               td [#{item.lon},#{item.lat}]
+              td
+                each led in item.leds
+                  #{led.id} {#{led.imei},#{led.status},#{led.brightness}}
               td #{item.airBox.id} #{item.airBox.realtime}
-              td #{item.adScreen.id}
-              td #{item.adScreen.city}
-              td #{item.adScreen.station}
+              td #{item.adScreen.id} {#{item.adScreen.city},#{item.adScreen.station}}
+              td 摄像头
               td
                 a.btn.btn-sm.btn-info(href='/pole/update/' + item._id, roel='button', target='_self') Update
               td

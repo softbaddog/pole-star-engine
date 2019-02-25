@@ -24,6 +24,22 @@ block content
             input#inputLat.form-control(name='pole[lat]',type='text',value=pole.lat)
 
           .form-group
+            label(for='inputLedID') 0-LedID
+            input#inputLedID.form-control(name='leds[0][id]', type='text',value=pole.leds[0].id)
+
+          .form-group
+            label(for='inputLedID') 0-LedIMEI
+            input#inputLedID.form-control(name='leds[0][imei]', type='text',value=pole.leds[0].imei)
+
+          .form-group
+            label(for='inputLedID') 1-LedID
+            input#inputLedID.form-control(name='leds[1][id]', type='text', value=pole.leds[1].id)
+
+          .form-group
+            label(for='inputLedID') 1-LedIMEI
+            input#inputLedID.form-control(name='leds[1][imei]', type='text', value=pole.leds[1].imei)
+
+          .form-group
             label(for='inputAirBoxID') AirBoxID
             input#inputAirBoxID.form-control(name='airBox[id]',type='text',value=pole.airBox.id)
           
@@ -32,12 +48,12 @@ block content
             input#inputAdScreenID.form-control(name='adScreen[id]',type='text',value=pole.adScreen.id)
           .form-group
             label(for='inputAdScreenCity') City
-            select#inputAdScreenCity.form-control(name='adScreen[city]')
+            select#inputAdScreenCity.form-control(name='adScreen[city]',value=pole.adScreen.city)
               option(value="东莞") 东莞
               option(value="深圳") 深圳
           .form-group
             label(for='inputAdScreenStation') Station
-            select#inputAdScreenStation.form-control(name='adScreen[station]')
+            select#inputAdScreenStation.form-control(name='adScreen[station]',value=pole.adScreen.station)
               option(value="21") G区
               option(value="18") J区
 

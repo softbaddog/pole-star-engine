@@ -6,10 +6,10 @@ const Pole = require('../models/pole');
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
-  Pole.find({}, function (err, docs) {
+  Pole.find({}, function (err, poles) {
     res.render('index', {
       title: 'PoleStarEngine',
-      poles: docs
+      poles: poles
     });
   })
 });
@@ -23,6 +23,13 @@ router.get('/pole/new', function (req, res, next) {
       siteName: '',
       lon: null,
       lat: null,
+      leds: [{
+          id: ''
+        },
+        {
+          id: ''
+        }
+      ],
       airBox: {
         id: ''
       },
@@ -72,6 +79,7 @@ router.post('/pole', function (req, res, next) {
       siteName: poleObj.siteName,
       lon: poleObj.lon,
       lat: poleObj.lat,
+      leds: req.body.leds,
       airBox: {
         id: req.body.airBox.id
       },

@@ -10,10 +10,18 @@ var poleSchema = new Schema({
   siteName: String,
   lon: Number,
   lat: Number,
-  led: {
+  leds: [{
     id: String,
-    IMEI: String
-  },
+    imei: String,
+    status: {
+      type: Boolean,
+      default: false
+    },
+    brightness: {
+      type: Number,
+      default: 0
+    }
+  }],
   airBox: {
     id: String,
     realtime: {
