@@ -47,6 +47,7 @@ function getRecords(partition_cursor) {
       // console.log(body);
       if (body.records.length > 0) {
         for (let record of body.records) {
+          console.log(Buffer.from(record.data, 'base64').toString());
           myEmitter.emit('data', Buffer.from(record.data, 'base64'));
         }
       }

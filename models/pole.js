@@ -20,10 +20,7 @@ var poleSchema = new Schema({
       type: String,
       default: 0
     },
-    status: {
-      type: Boolean,
-      default: false
-    },
+    status: String,
     brightness: {
       type: Number,
       default: 0

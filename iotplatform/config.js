@@ -5,7 +5,7 @@ var path = require('path');
 module.exports = {
 	mode: 'hub', // hub,platform
 	encode: 'base64', // base64, msgpack, default
-	host: 'iot-api.huaweicloud.com', //49.4.80.153
+	host: 'iot-api.huaweicloud.com', // 49.4.80.153
 	port: '8743',
 	appId: 'I5CdO5AuYhrNBy6G4I24g2cfgfMa',
 	secret: 'vhY9yQlBeWFkVvIyQyxEL6qHWiIa',

@@ -36,10 +36,18 @@ myEmitter.on('data', (data) => {
 /* GET home page. */
 router.get('/', function (req, res, next) {
   Pole.find({}, function (err, poles) {
-    res.render('index', {
-      title: 'PoleStarEngine',
-      poles: poles
-    });
+    for (const pole of poles) {
+      dm.statusDevice(auth.loginInfo, pole.leds[0].deviceId)
+        .then(data => {
+          pole.leds[0].status = data.status;
+          pole.save();
+          
+          res.render('index', {
+            title: 'PoleStarEngine',
+            poles: poles
+          });
+        });
+    }
   })
 });
 
