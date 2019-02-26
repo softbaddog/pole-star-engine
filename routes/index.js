@@ -3,6 +3,35 @@ const moment = require('moment');
 const _ = require('underscore');
 const router = express.Router();
 const Pole = require('../models/pole');
+const auth = require('../iotplatform/auth');
+const pm = require('../iotplatform/pm');
+const dm = require('../iotplatform/dm');
+const cfg = require('../iotplatform/config');
+
+const myEmitter = require('../MyEmitter');
+myEmitter.on('data', (data) => {
+  var idx;
+  let msg;
+  var d = JSON.parse(data.toString());
+  var hasRawData = d.services.some(function (elem, index) {
+    idx = index;
+    return elem.serviceId == 'RawData';
+  });
+  if (hasRawData) {
+    switch (cfg.encode) {
+      case 'base64':
+        console.log(Buffer.from(d.services[idx].data.rawData, 'base64').toString());
+        break;
+
+      case 'msgpack':
+        console.log(msgpack.decode(Buffer.from(d.services[idx].data.rawData, 'base64')));
+        break;
+
+      default:
+        break;
+    }
+  }
+});
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -16,28 +45,35 @@ router.get('/', function (req, res, next) {
 
 /* GET new page. */
 router.get('/pole/new', function (req, res, next) {
-  res.render('new', {
-    title: 'PoleStarEngine',
-    pole: {
-      siteId: '',
-      siteName: '',
-      lon: null,
-      lat: null,
-      leds: [{
-          id: ''
-        },
-        {
-          id: ''
+  let pageNo = parseInt(req.query.pageNo) || 0;
+  let pageSize = parseInt(req.query.pageSize) || 10;
+  pm.getProducts(auth.loginInfo, pageNo, pageSize)
+    .then(data => {
+      res.render('new', {
+        title: 'PoleStarEngine',
+        totalCount: data.totalCount,
+        products: data.products,
+        pole: {
+          siteId: '',
+          siteName: '',
+          lon: null,
+          lat: null,
+          leds: [{
+              id: ''
+            },
+            {
+              id: ''
+            }
+          ],
+          airBox: {
+            id: ''
+          },
+          adScreen: {
+            id: ''
+          }
         }
-      ],
-      airBox: {
-        id: ''
-      },
-      adScreen: {
-        id: ''
-      }
-    }
-  });
+      });
+    });
 });
 
 // GET update page
@@ -89,12 +125,18 @@ router.post('/pole', function (req, res, next) {
         station: req.body.adScreen.station
       }
     });
-    _pole.save(function (err, doc) {
-      if (err) {
-        console.log(err);
-      } else {
-        res.redirect('/');
-      }
+    _pole.leds.forEach(led => {
+      dm.registerDevice(auth.loginInfo, led.id, led.productId)
+        .then(deviceId => {
+          led.deviceId = deviceId;
+          _pole.save(function (err) {
+            if (err) {
+              console.log(err);
+            } else {
+              res.redirect('/');
+            }
+          });
+        });
     });
   }
 });
@@ -107,8 +149,13 @@ router.delete('/pole', function (req, res, next) {
     if (err) {
       console.log(err);
     } else {
-      res.json({
-        success: 1
+      pole.leds.forEach(led => {
+        dm.deleteDevice(auth.loginInfo, led.deviceId)
+          .then(data => {
+            res.json({
+              success: 1
+            });
+          });
       });
     }
   });

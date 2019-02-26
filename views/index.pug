@@ -24,7 +24,7 @@ block content
               td [#{item.lon},#{item.lat}]
               td
                 each led in item.leds
-                  #{led.id} {#{led.imei},#{led.status},#{led.brightness}}
+                  #{led.id} {#{led.deviceId},#{led.productId},#{led.status},#{led.brightness}}
               td #{item.airBox.id} #{item.airBox.realtime}
               td #{item.adScreen.id} {#{item.adScreen.city},#{item.adScreen.station}}
               td 摄像头

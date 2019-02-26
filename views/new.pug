@@ -24,20 +24,17 @@ block content
             input#inputLat.form-control(name='pole[lat]',type='text',value=pole.lat)
 
           .form-group
-            label(for='inputLedID') 0-LedID
+            label(for='inputProductId') NB-LED model
+            select#inputProductId.form-control(name='leds[0][productId]')
+              each product in products
+                if (pole.leds[0][productId] == product.productId)
+                  option(value=product.productId selected) #{product.model}
+                else
+                  option(value=product.productId) #{product.model}
+
+          .form-group
+            label(for='inputLedID') NB-LED IMEI
             input#inputLedID.form-control(name='leds[0][id]', type='text',value=pole.leds[0].id)
-
-          .form-group
-            label(for='inputLedID') 0-LedIMEI
-            input#inputLedID.form-control(name='leds[0][imei]', type='text',value=pole.leds[0].imei)
-
-          .form-group
-            label(for='inputLedID') 1-LedID
-            input#inputLedID.form-control(name='leds[1][id]', type='text', value=pole.leds[1].id)
-
-          .form-group
-            label(for='inputLedID') 1-LedIMEI
-            input#inputLedID.form-control(name='leds[1][imei]', type='text', value=pole.leds[1].imei)
 
           .form-group
             label(for='inputAirBoxID') AirBoxID

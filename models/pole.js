@@ -12,7 +12,14 @@ var poleSchema = new Schema({
   lat: Number,
   leds: [{
     id: String,
-    imei: String,
+    deviceId: {
+      type: String,
+      default: 0
+    },
+    productId: {
+      type: String,
+      default: 0
+    },
     status: {
       type: Boolean,
       default: false
