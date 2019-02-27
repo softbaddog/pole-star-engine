@@ -1,12 +1,19 @@
-var request = require('request');
-var moment = require('moment');
-var crypto = require('crypto');
-var myEmitter = require('../MyEmitter');
+const request = require('request');
+const moment = require('moment');
+const crypto = require('crypto');
+const msgpack = require('msgpack5');
 
-const AK = "ZQJS6DUH8U2SHEJKSCTI";
-const SK = "mCfwko4hBXem9hjzZFO8GYoow8J84dRrKL25efGN";
-const projectid = "ad44822859da4e13aed4ddccdd68966d";
-const streamName = "dis-aFYy";
+const Pole = require('../models/pole');
+const cfg = require('./config');
+
+// const AK = "ZQJS6DUH8U2SHEJKSCTI";
+// const SK = "mCfwko4hBXem9hjzZFO8GYoow8J84dRrKL25efGN";
+// const projectid = "ad44822859da4e13aed4ddccdd68966d";
+// const streamName = "dis-aFYy";
+const AK = "WDPFYNDGIX2YQBWJYPAX";
+const SK = "MrOE6M1E2GcMvJLrMyyr0utWDCO3lcBqzbnBTI5p";
+const projectid = "f7d55a9d45744c38a176c483ef926253";
+const streamName = "dis-OHCw";
 const region = "cn-north-1";
 const Host = 'dis.cn-north-1.myhuaweicloud.com:20004';
 
@@ -47,8 +54,42 @@ function getRecords(partition_cursor) {
       // console.log(body);
       if (body.records.length > 0) {
         for (let record of body.records) {
-          console.log(Buffer.from(record.data, 'base64').toString());
-          myEmitter.emit('data', Buffer.from(record.data, 'base64'));
+          let idx;
+          let msg = JSON.parse(Buffer.from(record.data, 'base64').toString());
+          let hasRawData = msg.services.some(function (elem, index) {
+            idx = index;
+            return elem.serviceId == 'RawData';
+          });
+          if (hasRawData) {
+            console.log(msg.deviceId);
+            Pole.findOne({
+                "nbLed.leds.deviceId": msg.deviceId
+              },
+              function (err, pole) {
+                if (!err && pole) {
+                  let rawData = msg.services[idx].data.rawData;
+                  pole.nbLed.leds.forEach(led => {
+                    if (led.deviceId === msg.deviceId) {
+                      switch (cfg.encode) {
+                        case 'base64':
+                          led.data = Buffer.from(rawData, 'base64').toString();
+                          break;
+
+                        case 'msgpack':
+                          led.data = JSON.stringify(msgpack.decode(Buffer.from(rawData, 'base64')));
+                          break;
+
+                        default:
+                          break;
+                      }
+                      pole.save();
+                    }
+                  });
+                } else {
+                  console.log(err, pole);
+                }
+              })
+          }
         }
       }
       if (body.next_partition_cursor) {

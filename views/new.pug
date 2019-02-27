@@ -4,54 +4,68 @@ block content
   .container
     .row
       .col-md-4
-        form.form-horizontal(method="POST", action="/pole")
+        form.form-horizontal(method="POST", enctype="multipart/form-data", action="/pole")
           input(name='pole[_id]', type="hidden", value=pole._id)
 
           .form-group
             label(for='inputSiteID') SiteID
-            input#inputSiteID.form-control(name='pole[siteId]',type='text',value=pole.siteId)
+            input#inputSiteID.form-control(name='pole[site][id]',type='text',value=pole.site.id)
 
           .form-group
             label(for='inputSiteName') SiteName
-            input#inputSiteName.form-control(name='pole[siteName]',type='text',value=pole.siteName)
+            input#inputSiteName.form-control(name='pole[site][name]',type='text',value=pole.site.name)
 
           .form-group
             label(for='inputLon') Longitude
-            input#inputLon.form-control(name='pole[lon]',type='text',value=pole.lon)
+            input#inputLon.form-control(name='pole[site][lon]',type='text',value=pole.site.lon)
           
           .form-group
             label(for='inputLat') Latitude
-            input#inputLat.form-control(name='pole[lat]',type='text',value=pole.lat)
+            input#inputLat.form-control(name='pole[site][lat]',type='text',value=pole.site.lat)
 
           .form-group
             label(for='inputProductId') NB-LED model
-            select#inputProductId.form-control(name='leds[0][productId]')
+            select#inputProductId.form-control(name='pole[nbLed][id]')
               each product in products
-                if (pole.leds[0][productId] == product.productId)
+                if (pole.nbLed[id] == product.productId)
                   option(value=product.productId selected) #{product.model}
                 else
                   option(value=product.productId) #{product.model}
 
           .form-group
-            label(for='inputLedID') NB-LED IMEI
-            input#inputLedID.form-control(name='leds[0][id]', type='text',value=pole.leds[0].id)
+            label(for='inputLedID') NB-LED0 Name
+            input#inputLedID.form-control(name='pole[nbLed][leds][0][name]', type='text', value=pole.nbLed.leds[0].name)
+          .form-group
+            label(for='inputLedID') NB-LED0 IMEI
+            input#inputLedID.form-control(name='pole[nbLed][leds][0][id]', type='text', value=pole.nbLed.leds[0].id)
+
+          .form-group
+            label(for='inputLedID') NB-LED1 Name
+            input#inputLedID.form-control(name='pole[nbLed][leds][1][name]', type='text', value=pole.nbLed.leds[1].name)
+          .form-group
+            label(for='inputLedID') NB-LED1 IMEI
+            input#inputLedID.form-control(name='pole[nbLed][leds][1][id]', type='text', value=pole.nbLed.leds[1].id)
 
           .form-group
             label(for='inputAirBoxID') AirBoxID
-            input#inputAirBoxID.form-control(name='airBox[id]',type='text',value=pole.airBox.id)
+            input#inputAirBoxID.form-control(name='pole[airBox][id]',type='text',value=pole.airBox.id)
           
           .form-group
             label(for='inputAdScreenID') AdScreenID
-            input#inputAdScreenID.form-control(name='adScreen[id]',type='text',value=pole.adScreen.id)
+            input#inputAdScreenID.form-control(name='pole[adScreen][id]',type='text',value=pole.adScreen.id)
+
           .form-group
             label(for='inputAdScreenCity') City
-            select#inputAdScreenCity.form-control(name='adScreen[city]',value=pole.adScreen.city)
+            select#inputAdScreenCity.form-control(name='pole[adScreen][city]',value=pole.adScreen.city)
               option(value="东莞") 东莞
               option(value="深圳") 深圳
           .form-group
             label(for='inputAdScreenStation') Station
-            select#inputAdScreenStation.form-control(name='adScreen[station]',value=pole.adScreen.station)
+            select#inputAdScreenStation.form-control(name='pole[adScreen][station]',value=pole.adScreen.station)
               option(value="21") G区
               option(value="18") J区
-
+          .form-group
+            label(for='inputfile') Image Upload
+            input#inputfile(name='image' type="file")
+            
           button.btn.btn-primary(type = 'submit') Submit

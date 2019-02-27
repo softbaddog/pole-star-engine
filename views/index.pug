@@ -13,24 +13,24 @@ block content
             th AirBox
             th AdScreen
             th Camera
-            th Update
-            th Delete
+            th Operation
         tbody
           each item in poles
             tr(class='item-id-' + item._id, style="word-break:break-all")
               td 
-                a(href='/pole/' + item._id, target='_self') #{item.siteId}
-              td #{item.siteName}
-              td [#{item.lon},#{item.lat}]
+                a(href='/pole/' + item._id, target='_self') #{item.site.id}
+              td #{item.site.name}
+              td [#{item.site.lon},#{item.site.lat}]
               td
-                each led in item.leds
-                  #{led.id} {#{led.deviceId},#{led.productId},#{led.status},#{led.brightness}}
+                p #{item.nbLed.id} 
+                each led in item.nbLed.leds
+                  p #{led.id} {#{led.deviceId},#{led.status},#{led.brightness}} #{"DATA: " + led.data}
               td #{item.airBox.id} #{item.airBox.realtime}
               td #{item.adScreen.id} {#{item.adScreen.city},#{item.adScreen.station}}
+                img.img-rounded(src=item.adScreen.picLink, width="128px" height="256" alt="广告位")
               td 摄像头
-              td
-                a.btn.btn-sm.btn-info(href='/pole/update/' + item._id, roel='button', target='_self') Update
-              td
-                button.btn.btn-sm.btn-danger.del(data-id=item._id, type='button') Delete
+              td(style='width:140px')
+                a.btn.btn.btn-info(href='/pole/update/' + item._id, role='button', target='_self') 修改
+                button.btn.btn.btn-danger.del(data-id=item._id, type='button') 删除
   script(src='/javascripts/admin.js')
           

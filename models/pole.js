@@ -2,32 +2,42 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 var poleSchema = new Schema({
-  siteId: {
-    type: String,
-    index: true,
-    unique: true
+  site: {
+    id: {
+      type: String,
+      index: true,
+      unique: true
+    },
+    name: String,
+    lon: Number,
+    lat: Number,
   },
-  siteName: String,
-  lon: Number,
-  lat: Number,
-  leds: [{
+  nbLed: {
     id: String,
-    deviceId: {
-      type: String,
-      default: 0
-    },
-    productId: {
-      type: String,
-      default: 0
-    },
-    status: String,
-    brightness: {
-      type: Number,
-      default: 0
-    }
-  }],
+    leds: [{
+      id: String,
+      name: String,
+      deviceId: {
+        type: String,
+        default: 0
+      },
+      status: String,
+      brightness: {
+        type: Number,
+        default: 0
+      },
+      data: {
+        type: String,
+        default: ''
+      }
+    }]
+  },
   airBox: {
-    id: String,
+    id: {
+      type: String,
+      index: true,
+      unique: true
+    }, 
     realtime: {
       "temperature": String,
       "humidity": String,
@@ -40,13 +50,21 @@ var poleSchema = new Schema({
     timestamp: Date
   },
   adScreen: {
-    id: String,
+    id: {
+      type: String,
+      index: true,
+      unique: true
+    },
     city: String,
     station: String,
     picLink: String
   },
   camera: {
-    id: String,
+    id: {
+      type: String,
+      index: true,
+      unique: true
+    },
     crowDensity: {
       enable: Boolean,
       sensitivity: Number,

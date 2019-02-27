@@ -3,7 +3,7 @@ var cfg = require('./config');
 
 const url = 'https://' + cfg.host + ':' + cfg.port;
 
-const createOptions = (loginInfo, nodeId, productId) => {
+const createOptions = (loginInfo, productId, nodeId, nodeName) => {
   if (cfg.mode == 'platform') {
     return {
       method: 'POST',
@@ -20,6 +20,7 @@ const createOptions = (loginInfo, nodeId, productId) => {
       body: {
         'verifyCode': nodeId,
         'nodeId': nodeId,
+        'name': nodeName,
         'timeout': 0
       },
       strictSSL: false,
@@ -42,6 +43,7 @@ const createOptions = (loginInfo, nodeId, productId) => {
         'name': 'xxx',
         'productId': productId,
         'nodeId': nodeId,
+        'name': nodeName,
         'timeout': 0
       },
       strictSSL: false,
@@ -51,9 +53,9 @@ const createOptions = (loginInfo, nodeId, productId) => {
 };
 
 // register a device
-exports.registerDevice = (loginInfo, nodeId, productId) => {
+exports.registerDevice = (loginInfo, productId, nodeId, nodeName) => {
   return new Promise((resolve, reject) => {
-    request(createOptions(loginInfo, nodeId, productId), (err, res, body) => {
+    request(createOptions(loginInfo, productId, nodeId, nodeName), (err, res, body) => {
       console.log(body);
       if (!err && res.statusCode === 200) {
         resolve(body.deviceId);

@@ -1,52 +1,37 @@
 const express = require('express');
-const moment = require('moment');
 const _ = require('underscore');
+const multipart = require('connect-multiparty')();
+
 const router = express.Router();
 const Pole = require('../models/pole');
 const auth = require('../iotplatform/auth');
 const pm = require('../iotplatform/pm');
 const dm = require('../iotplatform/dm');
-const cfg = require('../iotplatform/config');
-
-const myEmitter = require('../MyEmitter');
-myEmitter.on('data', (data) => {
-  var idx;
-  let msg;
-  var d = JSON.parse(data.toString());
-  var hasRawData = d.services.some(function (elem, index) {
-    idx = index;
-    return elem.serviceId == 'RawData';
-  });
-  if (hasRawData) {
-    switch (cfg.encode) {
-      case 'base64':
-        console.log(Buffer.from(d.services[idx].data.rawData, 'base64').toString());
-        break;
-
-      case 'msgpack':
-        console.log(msgpack.decode(Buffer.from(d.services[idx].data.rawData, 'base64')));
-        break;
-
-      default:
-        break;
-    }
-  }
-});
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
   Pole.find({}, function (err, poles) {
-    for (const pole of poles) {
-      dm.statusDevice(auth.loginInfo, pole.leds[0].deviceId)
-        .then(data => {
-          pole.leds[0].status = data.status;
-          pole.save();
-          
+    if (!err && poles) {
+      let count = 0;
+      poles.forEach(pole => {
+        pole.nbLed.leds.forEach(led => {
+          dm.statusDevice(auth.loginInfo, led.deviceId)
+            .then(data => {
+              led.status = data.status;
+              pole.save();
+              count++;
+            });
+        })
+      })
+      let timer = setInterval(() => {
+        if (poles.length * 2 === count) {
+          clearInterval(timer);
           res.render('index', {
             title: 'PoleStarEngine',
             poles: poles
           });
-        });
+        }
+      }, 10);
     }
   })
 });
@@ -62,17 +47,24 @@ router.get('/pole/new', function (req, res, next) {
         totalCount: data.totalCount,
         products: data.products,
         pole: {
-          siteId: '',
-          siteName: '',
-          lon: null,
-          lat: null,
-          leds: [{
-              id: ''
-            },
-            {
-              id: ''
-            }
-          ],
+          site: {
+            id: '',
+            name: '',
+            lon: null,
+            lat: null
+          },
+          nbLed: {
+            id: '',
+            leds: [{
+                id: '',
+                name: ''
+              },
+              {
+                id: '',
+                name: ''
+              }
+            ],
+          },
           airBox: {
             id: ''
           },
@@ -87,18 +79,26 @@ router.get('/pole/new', function (req, res, next) {
 // GET update page
 router.get('/pole/update/:id', function (req, res, next) {
   var id = req.params.id;
-  if (id) {
-    Pole.findById(id, function (err, pole) {
-      res.render('new', {
-        title: 'PoleStarEngine',
-        pole: pole
-      });
+  let pageNo = parseInt(req.query.pageNo) || 0;
+  let pageSize = parseInt(req.query.pageSize) || 10;
+  pm.getProducts(auth.loginInfo, pageNo, pageSize)
+    .then(data => {
+      if (id) {
+        Pole.findById(id, function (err, pole) {
+          res.render('new', {
+            title: 'PoleStarEngine',
+            totalCount: data.totalCount,
+            products: data.products,
+            pole: pole
+          });
+        });
+      }
     });
-  }
 });
 
-router.post('/pole', function (req, res, next) {
+router.post('/pole', multipart, function (req, res) {
   console.log(req.body);
+  console.log(req.files);
   var id = req.body.pole._id;
   var poleObj = req.body.pole;
   var _pole;
@@ -108,7 +108,18 @@ router.post('/pole', function (req, res, next) {
         console.log(err);
       }
 
+      var deviceId0 = pole.nbLed.leds[0].deviceId;
+      var deviceId1 = pole.nbLed.leds[1].deviceId;
+
       _pole = _.extend(pole, poleObj);
+      _pole.nbLed.leds[0].deviceId = deviceId0;
+      _pole.nbLed.leds[1].deviceId = deviceId1;
+      if (req.files.image.size) {
+        _pole.adScreen.picLink = req.files.image.path.substring("public\\".length);
+      } else {
+        _pole.adScreen.picLink = pole.adScreen.picLink;
+      }
+
       _pole.save(function (err, doc) {
         if (err) {
           console.log(err);
@@ -118,34 +129,38 @@ router.post('/pole', function (req, res, next) {
       });
     });
   } else {
+    let count = 0;
     _pole = new Pole({
-      siteId: poleObj.siteId,
-      siteName: poleObj.siteName,
-      lon: poleObj.lon,
-      lat: poleObj.lat,
-      leds: req.body.leds,
-      airBox: {
-        id: req.body.airBox.id
-      },
+      site: poleObj.site,
+      nbLed: poleObj.nbLed,
+      airBox: poleObj.airBox,
       adScreen: {
-        id: req.body.adScreen.id,
-        city: req.body.adScreen.city,
-        station: req.body.adScreen.station
+        id: poleObj.adScreen.id,
+        city: poleObj.adScreen.city,
+        station: poleObj.adScreen.station,
+        picLink: req.files.image.path.substring("public\\".length)
       }
     });
-    _pole.leds.forEach(led => {
-      dm.registerDevice(auth.loginInfo, led.id, led.productId)
+    _pole.nbLed.leds.forEach(led => {
+      dm.registerDevice(auth.loginInfo, _pole.nbLed.id, led.id, led.name)
         .then(deviceId => {
           led.deviceId = deviceId;
-          _pole.save(function (err) {
-            if (err) {
-              console.log(err);
-            } else {
-              res.redirect('/');
-            }
-          });
+          count++;
         });
     });
+
+    var timer = setInterval(() => {
+      if (count === 2) {
+        clearInterval(timer);
+        _pole.save(function (err) {
+          if (err) {
+            console.log(err);
+          } else {
+            res.redirect('/');
+          }
+        });
+      }
+    }, 100);
   }
 });
 
@@ -157,13 +172,11 @@ router.delete('/pole', function (req, res, next) {
     if (err) {
       console.log(err);
     } else {
-      pole.leds.forEach(led => {
-        dm.deleteDevice(auth.loginInfo, led.deviceId)
-          .then(data => {
-            res.json({
-              success: 1
-            });
-          });
+      pole.nbLed.leds.forEach(led => {
+        dm.deleteDevice(auth.loginInfo, led.deviceId);
+      });
+      res.json({
+        success: 1
       });
     }
   });
