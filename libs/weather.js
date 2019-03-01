@@ -1,9 +1,12 @@
 const moment = require('moment');
 const request = require('request');
+const _ = require("underscore");
 const Pole = require('../models/pole');
 
 const appKey = '4b406925870a76031354d7aa6250cae9';
 const url = 'http://v.juhe.cn/weather';
+
+const url_head = "http://localhost:3000/images/g2/40x40/day/";
 
 exports.weatherInfo = (id, futureDay, ret) => {
   Pole.findOne({
@@ -25,7 +28,9 @@ exports.weatherInfo = (id, futureDay, ret) => {
           let today = {
             "temperature": body.result.today.temperature,
             "weather": body.result.today.weather,
-            "weather_id": body.result.today.weather_id,
+            "weather_id": _.mapObject(body.result.today.weather_id, function(val, key) {
+              return url_head + val + ".png"
+            }),
             "wind": body.result.today.wind,
             "week": body.result.today.week,
             "city": body.result.today.city,

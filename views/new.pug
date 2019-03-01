@@ -65,7 +65,10 @@ block content
               option(value="21") G区
               option(value="18") J区
           .form-group
-            label(for='inputfile') Image Upload
-            input#inputfile(name='image' type="file")
+            label(for='inputfile') Image0 Upload
+            input#inputfile(name='images[0]' type="file")
+          .form-group
+            label(for='inputfile') Image1 Upload
+            input#inputfile(name='images[1]' type="file")
             
           button.btn.btn-primary(type = 'submit') Submit

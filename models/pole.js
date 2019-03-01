@@ -57,7 +57,7 @@ var poleSchema = new Schema({
     },
     city: String,
     station: String,
-    picLink: String
+    picLinks: [String]
   },
   camera: {
     id: {

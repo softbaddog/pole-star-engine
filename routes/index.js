@@ -114,11 +114,14 @@ router.post('/pole', multipart, function (req, res) {
       _pole = _.extend(pole, poleObj);
       _pole.nbLed.leds[0].deviceId = deviceId0;
       _pole.nbLed.leds[1].deviceId = deviceId1;
-      if (req.files.image.size) {
-        _pole.adScreen.picLink = req.files.image.path.substring("public\\".length);
-      } else {
-        _pole.adScreen.picLink = pole.adScreen.picLink;
-      }
+
+      req.files.images.forEach(function(img) {
+        if (img.size) {
+          _pole.adScreen.picLinks.push(img.path.substring(img.path.lastIndexOf("\\") + 1));
+        } else {
+          _pole.adScreen.picLink = pole.adScreen.picLink;
+        }
+      })
 
       _pole.save(function (err, doc) {
         if (err) {
@@ -138,15 +141,21 @@ router.post('/pole', multipart, function (req, res) {
         id: poleObj.adScreen.id,
         city: poleObj.adScreen.city,
         station: poleObj.adScreen.station,
-        picLink: req.files.image.path.substring("public\\".length)
       }
     });
+    req.files.images.forEach(function (img) {
+      if (img.size) {
+        _pole.adScreen.picLinks.push(img.path.substring(img.path.lastIndexOf("\\") + 1));
+      }
+    })
     _pole.nbLed.leds.forEach(led => {
-      dm.registerDevice(auth.loginInfo, _pole.nbLed.id, led.id, led.name)
-        .then(deviceId => {
-          led.deviceId = deviceId;
-          count++;
-        });
+      if (led.id) {
+        dm.registerDevice(auth.loginInfo, _pole.nbLed.id, led.id, led.name)
+          .then(deviceId => {
+            led.deviceId = deviceId;
+            count++;
+          });
+      }
     });
 
     var timer = setInterval(() => {
@@ -202,6 +211,15 @@ router.get('/weather/:id', function (req, res) {
   if (id) {
     const w = require('../libs/weather');
     w.weatherInfo(id, futureDay, res);
+  }
+});
+
+// Get weather
+router.get('/ad/:id', function (req, res) {
+  var id = req.params.id;
+  if (id) {
+    const ad = require('../libs/ad');
+    ad.adInfo(id, res);
   }
 });
 

@@ -27,7 +27,8 @@ block content
                   p #{led.id} {#{led.deviceId},#{led.status},#{led.brightness}} #{"DATA: " + led.data}
               td #{item.airBox.id} #{item.airBox.realtime}
               td #{item.adScreen.id} {#{item.adScreen.city},#{item.adScreen.station}}
-                img.img-rounded(src=item.adScreen.picLink, width="128px" height="256" alt="广告位")
+                each pic in item.adScreen.picLinks
+                  img.img-rounded(src="/images/" + pic, width="128px" height="256" alt="广告位")
               td 摄像头
               td(style='width:140px')
                 a.btn.btn.btn-info(href='/pole/update/' + item._id, role='button', target='_self') 修改
