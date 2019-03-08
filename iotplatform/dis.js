@@ -13,7 +13,7 @@ const cfg = require('./config');
 const AK = "WDPFYNDGIX2YQBWJYPAX";
 const SK = "MrOE6M1E2GcMvJLrMyyr0utWDCO3lcBqzbnBTI5p";
 const projectid = "f7d55a9d45744c38a176c483ef926253";
-const streamName = "dis-OHCw";
+const streamName = "dis-oH9b";
 const region = "cn-north-1";
 const Host = 'dis.cn-north-1.myhuaweicloud.com:20004';
 
@@ -56,40 +56,45 @@ function getRecords(partition_cursor) {
         for (let record of body.records) {
           let idx;
           let msg = JSON.parse(Buffer.from(record.data, 'base64').toString());
-          let hasRawData = msg.services.some(function (elem, index) {
-            idx = index;
-            return elem.serviceId == 'RawData';
-          });
-          if (hasRawData) {
-            console.log(msg.deviceId);
-            Pole.findOne({
-                "nbLed.leds.deviceId": msg.deviceId
-              },
-              function (err, pole) {
-                if (!err && pole) {
-                  let rawData = msg.services[idx].data.rawData;
-                  pole.nbLed.leds.forEach(led => {
-                    if (led.deviceId === msg.deviceId) {
-                      switch (cfg.encode) {
-                        case 'base64':
-                          led.data = Buffer.from(rawData, 'base64').toString();
-                          break;
+          if (msg.services) {
+            let hasRawData = msg.services.some(function (elem, index) {
+              idx = index;
+              return elem.serviceId == 'RawData';
+            });
+            if (hasRawData) {
+              console.log(msg.deviceId);
+              Pole.findOne({
+                  "nbLed.leds.deviceId": msg.deviceId
+                },
+                function (err, pole) {
+                  if (!err && pole) {
+                    let rawData = msg.services[idx].data.rawData;
+                    pole.nbLed.leds.forEach(led => {
+                      if (led.deviceId === msg.deviceId) {
+                        switch (cfg.encode) {
+                          case 'base64':
+                            led.data = Buffer.from(rawData, 'base64').toString();
+                            break;
 
-                        case 'msgpack':
-                          led.data = JSON.stringify(msgpack.decode(Buffer.from(rawData, 'base64')));
-                          break;
+                          case 'msgpack':
+                            led.data = JSON.stringify(msgpack.decode(Buffer.from(rawData, 'base64')));
+                            break;
 
-                        default:
-                          break;
+                          default:
+                            break;
+                        }
+                        pole.save();
                       }
-                      pole.save();
-                    }
-                  });
-                } else {
-                  console.log(err, pole);
-                }
-              })
+                    });
+                  } else {
+                    console.log(err, pole);
+                  }
+                })
+            }
+          } else {
+            console.log(msg);
           }
+
         }
       }
       if (body.next_partition_cursor) {

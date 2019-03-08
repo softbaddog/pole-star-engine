@@ -3,7 +3,7 @@ const net = require('net');
 const Pole = require('../models/pole');
 
 const U16_OFFSET = 2;
-const ID_OFFSET = 2;
+const ID_OFFSET = 4;
 const HEAD_OFFSET = 4;
 const LENGTH_OFFSET = 2;
 const CMD_OFFSET = 1;
@@ -16,17 +16,23 @@ const WIND_DIRECTION_OFFSET = WIND_SPEED_OFFSET + U16_OFFSET;
 const PM25_OFFSET = WIND_DIRECTION_OFFSET + U16_OFFSET;
 
 const RET_SUCC_CODE = 'fefefe680200e2e4';
+const default_head = Buffer.from('fefefe68', 'hex');
 
 const server = net.createServer();
 
 server.on('connection', function (socket) {
   socket.setKeepAlive(true, 1000);
-  console.log('NEW SOCKET');
-
+  console.log('NEW SOCKET:' + JSON.stringify(socket.address()));
   socket.on('data', function (data) {
     const buf = Buffer.from(data, 'hex');
     console.log(buf);
-    const id = buf.readUInt16BE(0);
+    const id = buf.toString('hex').substr(0, ID_OFFSET * 2).toUpperCase()
+
+    if (buf.compare(default_head, 0, default_head.length,
+        ID_OFFSET, ID_OFFSET + HEAD_OFFSET)) {
+      console.log('The message head is not right.[' + default_head.toString('hex') + ']');
+      return;
+    }
     Pole.findOne({
       "airBox.id": id
     }, function (err, pole) {
@@ -48,6 +54,7 @@ server.on('connection', function (socket) {
       }
     });
     socket.write(Buffer.from(RET_SUCC_CODE, 'hex'));
+
   });
   socket.on('close', function () {
     console.log('SOCKET CLOSED');

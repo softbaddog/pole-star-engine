@@ -1,6 +1,7 @@
 const express = require('express');
 const _ = require('underscore');
 const multipart = require('connect-multiparty')();
+const path = require('path');
 
 const router = express.Router();
 const Pole = require('../models/pole');
@@ -108,21 +109,24 @@ router.post('/pole', multipart, function (req, res) {
         console.log(err);
       }
 
-      var deviceId0 = pole.nbLed.leds[0].deviceId;
-      var deviceId1 = pole.nbLed.leds[1].deviceId;
+      
+      var deviceId0 = pole.nbLed.leds[0].deviceId || 0;
+      var deviceId1 = pole.nbLed.leds[1].deviceId || 0;
 
       _pole = _.extend(pole, poleObj);
+      _pole.adScreen = _.extend(pole.adScreen, poleObj.adScreen);
+
       _pole.nbLed.leds[0].deviceId = deviceId0;
       _pole.nbLed.leds[1].deviceId = deviceId1;
 
       req.files.images.forEach(function(img) {
         if (img.size) {
-          _pole.adScreen.picLinks.push(img.path.substring(img.path.lastIndexOf("\\") + 1));
+          _pole.adScreen.picLinks.push(path.basename(img.path));
         } else {
-          _pole.adScreen.picLink = pole.adScreen.picLink;
+          _pole.adScreen.picLinks = pole.adScreen.picLinks;
         }
       })
-
+      console.log(_pole);
       _pole.save(function (err, doc) {
         if (err) {
           console.log(err);
@@ -145,11 +149,11 @@ router.post('/pole', multipart, function (req, res) {
     });
     req.files.images.forEach(function (img) {
       if (img.size) {
-        _pole.adScreen.picLinks.push(img.path.substring(img.path.lastIndexOf("\\") + 1));
+        _pole.adScreen.picLinks.push(path.basename(img.path));
       }
     })
     _pole.nbLed.leds.forEach(led => {
-      if (led.id) {
+      if (led.id !== '') {
         dm.registerDevice(auth.loginInfo, _pole.nbLed.id, led.id, led.name)
           .then(deviceId => {
             led.deviceId = deviceId;

@@ -60,11 +60,7 @@ var poleSchema = new Schema({
     picLinks: [String]
   },
   camera: {
-    id: {
-      type: String,
-      index: true,
-      unique: true
-    },
+    id: String,
     crowDensity: {
       enable: Boolean,
       sensitivity: Number,

@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const mongoose = require('mongoose');
 const multiparty = require('connect-multiparty');
+const cors = require('cors');
 
 const cfg = require('./iotplatform/config');
 const auth = require('./iotplatform/auth');
@@ -42,8 +43,9 @@ app.use(express.urlencoded({
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(multiparty({
-  uploadDir: './public/images'
+  uploadDir: './public/images/ad'
 }));
+app.use(cors());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);

@@ -16,7 +16,8 @@ const stationList = {
 }
 
 const token = 'e10adc3949ba59abbe56e057f20f883e';
-const url = 'http://119.23.252.16:8090/app/line';
+// const url = 'http://119.23.252.16:8090/app/line';
+const url = 'https://hw.fpdiov.com/capp/line';
 
 exports.busStationInfo = (id, pageNo, pageSize, maxShowBus, ratioDiff, ret) => {
   Pole.findOne({

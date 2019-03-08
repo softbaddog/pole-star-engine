@@ -18,7 +18,7 @@ block content
           each item in poles
             tr(class='item-id-' + item._id, style="word-break:break-all")
               td 
-                a(href='/pole/' + item._id, target='_self') #{item.site.id}
+                a(href='/demo.html', target='_blank') #{item.site.id}
               td #{item.site.name}
               td [#{item.site.lon},#{item.site.lat}]
               td
@@ -28,7 +28,7 @@ block content
               td #{item.airBox.id} #{item.airBox.realtime}
               td #{item.adScreen.id} {#{item.adScreen.city},#{item.adScreen.station}}
                 each pic in item.adScreen.picLinks
-                  img.img-rounded(src="/images/" + pic, width="128px" height="256" alt="广告位")
+                  img.img-rounded(src="/images/ad/" + pic, alt="广告位", width="128px", height="256")
               td 摄像头
               td(style='width:140px')
                 a.btn.btn.btn-info(href='/pole/update/' + item._id, role='button', target='_self') 修改

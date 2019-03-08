@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+  <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="https://cdn.bootcss.com/moment.js/2.24.0/moment.min.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <title>广告屏演示</title>
+</head>
+
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-12">
+        <table class="table">
+          <tbody>
+            <tr style="text-align: center;">
+              <td colspan="2">
+                <h2>{{ weather.today.city }}</h2>
+                <h4>{{ weather.today.date }} {{ now }} {{ weather.today.week }}</h4>
+                <div align="center" style=" background-color:#c6c6c6">
+                  <img v-bind:src="weather.today.weather_id.fa" class="img-responsive" alt="天气">
+                </div>
+                <h4>{{ weather.today.temperature }} | <b>{{ weather.today.weather }}</b></h4>
+                <h5>{{ weather.today.wind }}</h5>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <h5>明天</h5>
+                <h5>{{weather.future[0].temperature}}</h5>
+                <h5>{{weather.future[0].weather}}</h5>
+              </td>
+              <td>
+                <h5>后天</h4>
+                  <h5>{{weather.future[1].temperature}}</h5>
+                  <h5>{{weather.future[1].weather}}</h5>
+                  </ul>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <h5>温度：{{ weather.realtime.temperature }}</h5>
+                <h5>气压：{{ weather.realtime.pressure }}</h5>
+                <h5>风速：{{ weather.realtime['wind-speed'] }}</h5>
+                <h5>PM2.5：{{ weather.realtime['pm25'] }}</h5>
+              </td>
+              <td>
+                <h5>湿度：{{ weather.realtime.humidity }}</h5>
+                <h5>噪音：{{ weather.realtime.noise }}</h5>
+                <h5>风向：{{ weather.realtime['wind-direction'] }}</h5>
+              </td>
+            </tr>
+
+            <tr>
+              <td colspan="2">
+                <div v-for="(busStation,index) in busStations" class="col-md-12" v-bind:id="'canvas-container-' + busStation.id"
+                  style="padding: 0; margin: 0; height: 150px;">
+                  <h3>{{ busStation.id }}号线 | <small>始：{{ busStation.startTime }}&nbsp; 末：{{ busStation.endTime }}</small></h3>
+                  <h5 v-if="busStation.busLocationList[0]">下一趟车将于 {{ busStation.busLocationList[0].time }} 秒后抵达</h5>
+                  <canvas v-bind:id="'canvas-' + busStation.id" style="border: 0px solid #0f0; margin: 0; padding: 0">
+                    你的浏览器还不支持canvas
+                  </canvas>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script>
+    var app = new Vue({
+      el: '.container',
+      data: {
+        now: moment().format('HH:mm:ss'),
+        url: "http://139.159.254.213:3000",
+        //url: "http://95a2c0c849464cefb25a713d3a1bbce9.apigw.cn-south-1.huaweicloud.com",
+        weather: {
+          realtime: {
+            "temperature": "",
+            "humidity": "",
+            "pressure": "",
+            "noise": "",
+            "wind-speed": "",
+            "wind-direction": "",
+            "pm25": ""
+          },
+          today: {
+            "temperature": "",
+            "weather": "",
+            "weather_id": {
+              "fa": "",
+              "fb": ""
+            },
+            "wind": "",
+            "week": "",
+            "city": "",
+            "date": ""
+          },
+          future: [{
+              "temperature": "",
+              "weather": ""
+            },
+            {
+              "temperature": "",
+              "weather": ""
+            }
+          ]
+        },
+        busStations: []
+      },
+      watch: {
+        busStations: {
+          handler: function (val, oldVal) {
+            setTimeout(() => {
+              val,
+              oldVal
+              this.draw();
+            }, 10)
+          },
+          deep: true
+        }
+      },
+      methods: {
+        drawBus: function (ctx, nextArr, staPos, ratio) {
+          let img = new Image();
+          let length = (ctx.canvas.width * .9) / nextArr.length;
+          img.src = "./images/面包车.png";
+          img.onload = function () {
+            for (let obj of nextArr) {
+              if (obj.sta === staPos) {
+                ctx.drawImage(img, obj.pos - ratio * length, 0);
+                break;
+              }
+            }
+          }
+        },
+        drawLine: function (ctx, array) {
+          var start = 15;
+          var height = 45;
+          var radius = 5;
+          var length = (ctx.canvas.width * .9) / array.length;
+          var nextArr = [];
+
+          ctx.lineWidth = 2;
+          ctx.font = 'bolder 14px 雅黑';
+          ctx.strokeStyle = "#F5270B";
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+
+          ctx.beginPath();
+          for (let i = 0; i < array.length; i++) {
+            ctx.moveTo(start + radius * 2 + length * i, height);
+            ctx.arc(start + radius *
+              2 + length * i - radius, height, radius, 0, Math.PI * 2, false);
+            console.log(radius * 2 + length * i - radius);
+            if (i !==
+              0) {
+              nextArr.push({
+                sta: array[i],
+                pos: radius * 2 + length * i - radius
+              });
+            }
+            ctx.fillText(array[i], start +
+              radius + length * i, 85);
+            ctx.lineTo(start + length * (i + 1), height);
+          }
+          ctx.moveTo(start + radius * 2 + length * array.length, height);
+          ctx.arc(start + radius * 2 + length * array.length - radius, height, radius, 0, Math.PI * 2,
+            false);
+          console.log(radius * 2 + length * array.length - radius);
+          nextArr.push({
+            sta: array[0],
+            pos: radius * 2 +
+              length * array.length - radius
+          });
+          ctx.fillText(array[0], start + length * array.length, 85);
+          ctx.closePath();
+          ctx.stroke();
+          return nextArr;
+        },
+        draw: function () {
+          for (var item of this.busStations) {
+            let canvas = document.getElementById("canvas-" + item.id);
+            let canvasContainer = document.getElementById('canvas-container-' + item.id);
+            let ctx = canvas.getContext("2d");
+
+            ctx.canvas.width = canvasContainer.offsetWidth - 2;
+            ctx.canvas.height = canvasContainer.offsetHeight - 2;
+            let nextArr = this.drawLine(ctx, item.stationArr);
+
+            ctx.clearRect(0, 0, canvas.width, 32);
+            for (let bus of item.busLocationList) {
+              this.drawBus(ctx, nextArr, bus.nextStation, bus.nextStationRatio / 100);
+            }
+          }
+        },
+        readBusData: function () {
+          axios.get(this.url + '/busStation/111')
+            .then((res) => {
+              this.busStations.splice(0, this.busStations.length);
+              for (var data of res.data.data) {
+                this.busStations.push(data);
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        },
+        readWeatherData: function () {
+          axios.get(this.url + '/weather/111')
+            .then((res) => {
+              this.weather = res.data.data;
+              this.weather.today.weather_id.fa = this.weather.today.weather_id.fa.replace('40x40', '120x120');
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        }
+      },
+      created() {
+        this.readWeatherData();
+        this.readBusData();
+      },
+      mounted() {
+        var i = 0;
+        this.timer = setInterval(() => {
+          this.now = moment().format('HH:mm:ss');
+          i++;
+          if (i % 10 == 0) this.readBusData();
+          if (i % 86400 == 0) this.readWeatherData();
+        }, 1000);
+      },
+      beforeDestroy() {
+        if (this.timer) {
+          clearInterval(this.timer);
+        }
+      },
+    });
+  </script>
+
+</body>
+
+</html>
