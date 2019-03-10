@@ -37,7 +37,31 @@ var poleSchema = new Schema({
       type: String,
       index: true,
       unique: true
-    }, 
+    },
+    gatherTime: Date,
+    today: {
+      "temperature": String,
+      "weather": String,
+      "weather_id": {
+        "fa": String,
+        "fb": String
+      },
+      "wind": String,
+      "week": String,
+      "city": String,
+      "date": String
+    },
+    future: [{
+      "temperature": String,
+      "weather": String,
+      "weather_id": {
+        "fa": String,
+        "fb": String
+      },
+      "wind": String,
+      "week": String,
+      "date": String
+    }],
     realtime: {
       "temperature": String,
       "humidity": String,
@@ -55,7 +79,10 @@ var poleSchema = new Schema({
       index: true,
       unique: true
     },
-    city: String,
+    city: {
+      type: String,
+      unique: true
+    },
     station: String,
     picLinks: [String]
   },

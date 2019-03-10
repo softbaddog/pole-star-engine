@@ -75,6 +75,7 @@ exports.busStationInfo = (id, pageNo, pageSize, maxShowBus, ratioDiff, ret) => {
                 });
                 data.push({
                   id: line.id,
+                  name: line.lineName,
                   stationArr: stationArr,
                   startTime: line.startTime,
                   endTime: line.endTime,

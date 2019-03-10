@@ -1,7 +1,7 @@
 const moment = require('moment');
 const Pole = require('../models/pole');
 
-const url_head = "http://139.159.254.213:3000/images/"
+const URL_AD = "http://139.159.254.213:3000/images/ad/"
 
 exports.adInfo = (id, ret) => {
   Pole.findOne({
@@ -13,7 +13,7 @@ exports.adInfo = (id, ret) => {
         msg: "请求成功",
         totalCount: pole.adScreen.picLinks.length,
         picLinks: pole.adScreen.picLinks.map((e) => {
-          return url_head + e;
+          return URL_AD + e;
         })
       });
     } else {

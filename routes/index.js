@@ -108,22 +108,23 @@ router.post('/pole', multipart, function (req, res) {
       if (err) {
         console.log(err);
       }
-
       
       var deviceId0 = pole.nbLed.leds[0].deviceId || 0;
       var deviceId1 = pole.nbLed.leds[1].deviceId || 0;
 
+      var picLinks = pole.adScreen.picLinks;
+
       _pole = _.extend(pole, poleObj);
-      _pole.adScreen = _.extend(pole.adScreen, poleObj.adScreen);
+      _pole.adScreen.picLinks = new Array();
 
       _pole.nbLed.leds[0].deviceId = deviceId0;
       _pole.nbLed.leds[1].deviceId = deviceId1;
 
-      req.files.images.forEach(function(img) {
+      req.files.images.forEach(function(img, index) {
         if (img.size) {
-          _pole.adScreen.picLinks.push(path.basename(img.path));
+          _pole.adScreen.picLinks[index] = path.basename(img.path);
         } else {
-          _pole.adScreen.picLinks = pole.adScreen.picLinks;
+          _pole.adScreen.picLinks[index] = picLinks[index];
         }
       })
       console.log(_pole);
@@ -144,7 +145,7 @@ router.post('/pole', multipart, function (req, res) {
       adScreen: {
         id: poleObj.adScreen.id,
         city: poleObj.adScreen.city,
-        station: poleObj.adScreen.station,
+        station: poleObj.adScreen.station
       }
     });
     req.files.images.forEach(function (img) {

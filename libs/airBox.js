@@ -3,7 +3,7 @@ const net = require('net');
 const Pole = require('../models/pole');
 
 const U16_OFFSET = 2;
-const ID_OFFSET = 4;
+const ID_OFFSET = 5;
 const HEAD_OFFSET = 4;
 const LENGTH_OFFSET = 2;
 const CMD_OFFSET = 1;
