@@ -14,25 +14,32 @@ router.get('/', function (req, res, next) {
   Pole.find({}, function (err, poles) {
     if (!err && poles) {
       let count = 0;
+      let statusDeviceArr = [];
       poles.forEach(pole => {
+        statusDeviceArr.push()
         pole.nbLed.leds.forEach(led => {
-          dm.statusDevice(auth.loginInfo, led.deviceId)
-            .then(data => {
-              led.status = data.status;
-              pole.save();
-              count++;
-            });
+          if (led.deviceId != 0) {
+            statusDeviceArr.push(dm.statusDevice(auth.loginInfo, led.deviceId));
+          }
         })
-      })
-      let timer = setInterval(() => {
-        if (poles.length * 2 === count) {
-          clearInterval(timer);
-          res.render('index', {
-            title: 'PoleStarEngine',
-            poles: poles
-          });
-        }
-      }, 10);
+      });
+      Promise.all(statusDeviceArr).then(result => {
+        poles.forEach(pole => {
+          pole.nbLed.leds.forEach(led => {
+            result.forEach(elem => {
+              if (led.deviceId == elem.deviceId &&
+                led.status != elem.status) {
+                led.status = elem.status;
+                pole.save();
+              }
+            })
+          })
+        })
+        res.render('index', {
+          title: 'PoleStarEngine',
+          poles: poles
+        });
+      });
     }
   })
 });
@@ -108,7 +115,7 @@ router.post('/pole', multipart, function (req, res) {
       if (err) {
         console.log(err);
       }
-      
+
       var deviceId0 = pole.nbLed.leds[0].deviceId || 0;
       var deviceId1 = pole.nbLed.leds[1].deviceId || 0;
 
@@ -120,7 +127,7 @@ router.post('/pole', multipart, function (req, res) {
       _pole.nbLed.leds[0].deviceId = deviceId0;
       _pole.nbLed.leds[1].deviceId = deviceId1;
 
-      req.files.images.forEach(function(img, index) {
+      req.files.images.forEach(function (img, index) {
         if (img.size) {
           _pole.adScreen.picLinks[index] = path.basename(img.path);
         } else {
@@ -137,7 +144,6 @@ router.post('/pole', multipart, function (req, res) {
       });
     });
   } else {
-    let count = 0;
     _pole = new Pole({
       site: poleObj.site,
       nbLed: poleObj.nbLed,
@@ -153,28 +159,30 @@ router.post('/pole', multipart, function (req, res) {
         _pole.adScreen.picLinks.push(path.basename(img.path));
       }
     })
+    let regDeviceArr = [];
     _pole.nbLed.leds.forEach(led => {
       if (led.id !== '') {
-        dm.registerDevice(auth.loginInfo, _pole.nbLed.id, led.id, led.name)
-          .then(deviceId => {
-            led.deviceId = deviceId;
-            count++;
-          });
+        regDeviceArr.push(dm.registerDevice(auth.loginInfo,
+          _pole.nbLed.id, led.id, led.name));
       }
     });
 
-    var timer = setInterval(() => {
-      if (count === 2) {
-        clearInterval(timer);
-        _pole.save(function (err) {
-          if (err) {
-            console.log(err);
-          } else {
-            res.redirect('/');
+    Promise.all(regDeviceArr).then(result => {
+      result.forEach(elem => {
+        _pole.nbLed.leds.forEach(led => {
+          if (led.id === elem.nodeId) {
+            led.deviceId = elem.deviceId;
           }
-        });
-      }
-    }, 100);
+        })
+      })
+      _pole.save(err => {
+        if (err) {
+          console.log(err);
+        } else {
+          res.redirect('/');
+        }
+      });
+    })
   }
 });
 
@@ -187,7 +195,9 @@ router.delete('/pole', function (req, res, next) {
       console.log(err);
     } else {
       pole.nbLed.leds.forEach(led => {
-        dm.deleteDevice(auth.loginInfo, led.deviceId);
+        if (led.deviceId != 0) {
+          dm.deleteDevice(auth.loginInfo, led.deviceId);
+        }
       });
       res.json({
         success: 1

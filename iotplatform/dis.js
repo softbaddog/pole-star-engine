@@ -6,14 +6,14 @@ const msgpack = require('msgpack5');
 const Pole = require('../models/pole');
 const cfg = require('./config');
 
-const AK = "ZQJS6DUH8U2SHEJKSCTI";
-const SK = "mCfwko4hBXem9hjzZFO8GYoow8J84dRrKL25efGN";
-const projectid = "ad44822859da4e13aed4ddccdd68966d";
-const streamName = "dis-aFYy";
-// const AK = "WDPFYNDGIX2YQBWJYPAX";
-// const SK = "MrOE6M1E2GcMvJLrMyyr0utWDCO3lcBqzbnBTI5p";
-// const projectid = "f7d55a9d45744c38a176c483ef926253";
-// const streamName = "dis-oH9b";
+// const AK = "ZQJS6DUH8U2SHEJKSCTI";
+// const SK = "mCfwko4hBXem9hjzZFO8GYoow8J84dRrKL25efGN";
+// const projectid = "ad44822859da4e13aed4ddccdd68966d";
+// const streamName = "dis-aFYy";
+const AK = "WDPFYNDGIX2YQBWJYPAX";
+const SK = "MrOE6M1E2GcMvJLrMyyr0utWDCO3lcBqzbnBTI5p";
+const projectid = "f7d55a9d45744c38a176c483ef926253";
+const streamName = "dis-oH9b";
 const region = "cn-north-1";
 const Host = 'dis.cn-north-1.myhuaweicloud.com:20004';
 

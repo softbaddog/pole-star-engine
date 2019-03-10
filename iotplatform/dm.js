@@ -58,7 +58,10 @@ exports.registerDevice = (loginInfo, productId, nodeId, nodeName) => {
     request(createOptions(loginInfo, productId, nodeId, nodeName), (err, res, body) => {
       console.log(body);
       if (!err && res.statusCode === 200) {
-        resolve(body.deviceId);
+        resolve({
+          nodeId: nodeId,
+          deviceId: body.deviceId
+        });
       } else {
         console.log(err);
       }
@@ -167,6 +170,7 @@ exports.statusDevice = (loginInfo, deviceId) => {
           });
         } else {
           resolve({
+            deviceId: deviceId,
             status: body.status
           });
         }
