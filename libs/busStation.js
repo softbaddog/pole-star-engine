@@ -32,29 +32,58 @@ let getBusLocation = (station, line, maxShowBus, ratioDiff) => {
       json: true
     }, (err, res, body) => {
       if (!err && res.statusCode === 200) {
+        let info = '车辆已收班';
         let busLocationList = [];
+        let [hStart, mStart] = line.startTime.split(':');
+        let [hEnd, mEnd] = line.endTime.split(':');
         let stationArr = line.stationArr.split(",");
-        for (const bus of body.data.busLocation) {
-          busLocationList.push({
-            time: bus.time,
-            nextStation: stationList[bus.nextStationId],
-            nextStationRatio: bus.nextStationRatio,
-            busNum: 1
-          });
-        }
-        busLocationList.sort(function (a, b) {
-          return (stationArr.indexOf(b.nextStation) - stationArr.indexOf(a.nextStation)) || (a.time - b.time);
-        });
-        busLocationList.forEach((elem, index, arr) => {
-          if (index == arr.length - 1 || arr[index + 1].nextStation != elem.nextStation) return;
-          if (arr[index + 1].nextStationRatio - elem.nextStationRatio <= ratioDiff) {
-            elem.busNum++;
-            arr.splice(index + 1, 1);
+        let sortArr = stationArr.concat(stationArr);
+        let newArr = sortArr.splice(sortArr.indexOf(stationList[station]), stationArr.length);
+        // console.log(newArr);
+        if (true || moment().isAfter(moment({
+            hour: hStart,
+            minute: mStart
+          })) && moment().isBefore(moment({
+            hour: hEnd,
+            minute: mEnd
+          }))) {
+          for (const bus of body.data.busLocation) {
+            busLocationList.push({
+              time: bus.time == '' ? 0 : bus.time,
+              nextStation: stationList[bus.nextStationId],
+              nextStationRatio: bus.nextStationRatio,
+              busNum: 1
+            });
           }
-        });
+          busLocationList.sort((first, second) => {
+            return newArr.indexOf(first.nextStation) - newArr.indexOf(second.nextStation) ||
+              first.nextStationRatio - second.nextStationRatio || first.time - second.time;
+          });
+          let emergeNaborBus = (elem, index, array) => {
+            if (index == array.length - 1 || array[index + 1].nextStation != elem.nextStation) return;
+            if (array[index + 1].nextStationRatio - elem.nextStationRatio <= ratioDiff) {
+              elem.busNum++;
+              array.splice(index + 1, 1);
+              emergeNaborBus(elem, index, array);
+            }
+          };
+          busLocationList.forEach(emergeNaborBus);
+
+          if (busLocationList[0].time == 0 && busLocationList[0].nextStationRatio == 0) {
+            info = '车辆已抵达';
+          } else if (busLocationList[0].time < 60) {
+            info = '下一趟车将于1分钟内抵达';
+          } else if (busLocationList[0].time < 120) {
+            info = '下一趟车将于2分钟内抵达';
+          } else {
+            info = '下一趟车抵达时间大于2分钟，请耐心等待';
+          }
+        }
         resolve({
           id: line.id,
           name: line.lineName,
+          info: info,
+          curr: stationList[station],
           stationArr: stationArr,
           startTime: line.startTime,
           endTime: line.endTime,

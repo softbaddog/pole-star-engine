@@ -60,10 +60,10 @@
 
             <tr>
               <td colspan="2">
-                <div v-for="(busStation,index) in busStations" class="col-md-12" v-bind:id="'canvas-container-' + busStation.id"
+                <div v-for="busStation in busStations" class="col-md-12" v-bind:id="'canvas-container-' + busStation.id"
                   style="padding: 0; margin: 0; height: 150px;">
                   <h3>{{ busStation.name }} | <small>始：{{ busStation.startTime }}&nbsp; 末：{{ busStation.endTime }}</small></h3>
-                  <h5 v-if="busStation.busLocationList[0]">下一趟车将于 {{ busStation.busLocationList[0].time }} 秒后抵达</h5>
+                  <h5>{{ busStation.info }}</h5>
                   <canvas v-bind:id="'canvas-' + busStation.id" style="border: 0px solid #0f0; margin: 0; padding: 0">
                     你的浏览器还不支持canvas
                   </canvas>
@@ -80,7 +80,8 @@
       el: '.container',
       data: {
         now: moment().format('HH:mm:ss'),
-        url: "http://localhost:3000",
+        //url: "http://localhost:3000",
+        url: "http://139.159.254.213:3000",
         //url: "http://95a2c0c849464cefb25a713d3a1bbce9.apigw.cn-south-1.huaweicloud.com",
         weather: {
           realtime: {
@@ -129,20 +130,26 @@
         }
       },
       methods: {
-        drawBus: function (ctx, nextArr, staPos, ratio) {
+        drawBus: function (ctx, nextArr, staPos, ratio, num) {
           let img = new Image();
           let length = (ctx.canvas.width * .9) / nextArr.length;
           img.src = "./images/面包车.png";
           img.onload = function () {
             for (let obj of nextArr) {
               if (obj.sta === staPos) {
+                ctx.font = 'bolder 14px';
+                if (num > 1) {
+                  ctx.font = 'bolder 14px 雅黑';
+                  ctx.fillStyle = "#F5270B"
+                  ctx.fillText(num, obj.pos - ratio * length + img.width - 5, 15);
+                }
                 ctx.drawImage(img, obj.pos - ratio * length, 0);
                 break;
               }
             }
           }
         },
-        drawLine: function (ctx, array) {
+        drawLine: function (ctx, array, curr) {
           var start = 15;
           var height = 45;
           var radius = 5;
@@ -160,14 +167,13 @@
             ctx.moveTo(start + radius * 2 + length * i, height);
             ctx.arc(start + radius *
               2 + length * i - radius, height, radius, 0, Math.PI * 2, false);
-            console.log(radius * 2 + length * i - radius);
-            if (i !==
-              0) {
+            if (i !== 0) {
               nextArr.push({
                 sta: array[i],
                 pos: radius * 2 + length * i - radius
               });
             }
+            array[i] == curr ? ctx.fillStyle = "#F5270B" : ctx.fillStyle = "black";
             ctx.fillText(array[i], start +
               radius + length * i, 85);
             ctx.lineTo(start + length * (i + 1), height);
@@ -175,12 +181,13 @@
           ctx.moveTo(start + radius * 2 + length * array.length, height);
           ctx.arc(start + radius * 2 + length * array.length - radius, height, radius, 0, Math.PI * 2,
             false);
-          console.log(radius * 2 + length * array.length - radius);
+          //console.log(radius * 2 + length * array.length - radius);
           nextArr.push({
             sta: array[0],
             pos: radius * 2 +
               length * array.length - radius
           });
+          array[0] == curr ? ctx.fillStyle = "#F5270B" : ctx.fillStyle = "black";
           ctx.fillText(array[0], start + length * array.length, 85);
           ctx.closePath();
           ctx.stroke();
@@ -194,11 +201,11 @@
 
             ctx.canvas.width = canvasContainer.offsetWidth - 2;
             ctx.canvas.height = canvasContainer.offsetHeight - 2;
-            let nextArr = this.drawLine(ctx, item.stationArr);
+            let nextArr = this.drawLine(ctx, item.stationArr, item.curr);
 
             ctx.clearRect(0, 0, canvas.width, 32);
             for (let bus of item.busLocationList) {
-              this.drawBus(ctx, nextArr, bus.nextStation, bus.nextStationRatio / 100);
+              this.drawBus(ctx, nextArr, bus.nextStation, bus.nextStationRatio / 100, bus.busNum);
             }
           }
         },
