@@ -79,10 +79,7 @@ var poleSchema = new Schema({
       index: true,
       unique: true
     },
-    city: {
-      type: String,
-      unique: true
-    },
+    city: String,
     station: String,
     picLinks: [String]
   },
@@ -101,4 +98,4 @@ var poleSchema = new Schema({
   }
 });
 
-module.exports = mongoose.model('Pole', poleSchema);
+module.exports = mongoose.model('pole', poleSchema);

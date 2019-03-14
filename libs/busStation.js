@@ -40,7 +40,7 @@ let getBusLocation = (station, line, maxShowBus, ratioDiff) => {
         let sortArr = stationArr.concat(stationArr);
         let newArr = sortArr.splice(sortArr.indexOf(stationList[station]), stationArr.length);
         // console.log(newArr);
-        if (true || moment().isAfter(moment({
+        if (moment().isAfter(moment({
             hour: hStart,
             minute: mStart
           })) && moment().isBefore(moment({
@@ -72,11 +72,11 @@ let getBusLocation = (station, line, maxShowBus, ratioDiff) => {
           if (busLocationList[0].time == 0 && busLocationList[0].nextStationRatio == 0) {
             info = '车辆已抵达';
           } else if (busLocationList[0].time < 60) {
-            info = '下一趟车将于1分钟内抵达';
+            info = '1分钟内抵达';
           } else if (busLocationList[0].time < 120) {
-            info = '下一趟车将于2分钟内抵达';
+            info = '2分钟内抵达';
           } else {
-            info = '下一趟车抵达时间大于2分钟，请耐心等待';
+            info = '大于2分钟，请稍等';
           }
         }
         resolve({
@@ -128,6 +128,7 @@ exports.busStationInfo = (id, pageNo, pageSize, maxShowBus, ratioDiff, ret) => {
               totalCount: lineArr.length,
               pageNo: pageNo,
               pageSize: pageSize,
+              station: stationList[pole.adScreen.station] + '区',
               data: data.slice(start, end),
               timestamp: moment().format()
             });

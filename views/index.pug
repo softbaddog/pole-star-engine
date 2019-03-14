@@ -28,7 +28,7 @@ block content
               td #{item.airBox.id} #{item.airBox.realtime}
               td #{item.adScreen.id} {#{item.adScreen.city},#{item.adScreen.station}}
                 each pic in item.adScreen.picLinks
-                  img.img-rounded(src="/images/ad/" + pic, alt="广告位", width="128px", height="256")
+                  img.img-rounded(src="/images/ad/" + pic, alt="广告位", width="192px", height="133px")
               td 摄像头
               td(style='width:140px')
                 a.btn.btn.btn-info(href='/pole/update/' + item._id, role='button', target='_self') 修改

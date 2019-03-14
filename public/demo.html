@@ -11,6 +11,55 @@
   <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
   <script src="https://cdn.bootcss.com/moment.js/2.24.0/moment.min.js"></script>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <style>
+    li {
+      list-style: none
+    }
+
+    .mainWrp {
+      width: 100%;
+      max-width: 640px;
+      overflow: hidden;
+      margin: 0 auto
+    }
+
+    .clear::after {
+      content: "";
+      display: block;
+      clear: both
+    }
+
+    .carousel {
+      position: relative;
+    }
+
+    .carousel p {
+      position: absolute;
+      bottom: 3px;
+      right: 0;
+      padding: 1px 5px;
+      text-align: center;
+      font-size: 12px;
+      color: #333;
+      background-color: rgba(255, 255, 255, .6)
+    }
+
+    .carousel span {
+      color: #666
+    }
+
+    .imgsWrp {
+      transition: all 700ms cubic-bezier(0.215, 0.610, 0.355, 1)
+    }
+
+    .imgsWrp li {
+      float: left
+    }
+
+    .imgsWrp img {
+      width: 100%
+    }
+  </style>
   <title>广告屏演示</title>
 </head>
 
@@ -24,7 +73,7 @@
               <td colspan="2">
                 <h2>{{ weather.today.city }}</h2>
                 <h4>{{ weather.today.date }} {{ now }} {{ weather.today.week }}</h4>
-                <div align="center" style=" background-color:#c6c6c6">
+                <div align="center" style=" background-color:#c6c6c6;padding: 25px;">
                   <img v-bind:src="weather.today.weather_id.fa" class="img-responsive" alt="天气">
                 </div>
                 <h4>{{ weather.today.temperature }} | <b>{{ weather.today.weather }}</b></h4>
@@ -57,7 +106,20 @@
                 <h5>风向：{{ weather.realtime['wind-direction'] }}</h5>
               </td>
             </tr>
-
+            <tr>
+              <td colspan="2" align="center">
+                <div class="mainWrp">
+                  <div class="carousel">
+                    <ul class="imgsWrp clear">
+                      <li class="example" v-for="item in imgsArray">
+                        <img :src="item">
+                      </li>
+                    </ul>
+                    <p><span>1</span>/{{imgsLens}}</p>
+                  </div>
+                </div>
+              </td>
+            </tr>
             <tr>
               <td colspan="2">
                 <div v-for="busStation in busStations" class="col-md-12" v-bind:id="'canvas-container-' + busStation.id"
@@ -76,13 +138,15 @@
     </div>
   </div>
   <script>
-    var app = new Vue({
+    new Vue({
       el: '.container',
       data: {
         now: moment().format('HH:mm:ss'),
         //url: "http://localhost:3000",
         url: "http://139.159.254.213:3000",
         //url: "http://95a2c0c849464cefb25a713d3a1bbce9.apigw.cn-south-1.huaweicloud.com",
+        imgsArray: [],
+        imgsLens: 2,
         weather: {
           realtime: {
             "temperature": "",
@@ -209,6 +273,15 @@
             }
           }
         },
+        readAdData: function () {
+          axios.get(this.url + '/ad/111')
+            .then((res) => {
+              this.imgsArray = res.data.picLinks;
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        },
         readBusData: function () {
           axios.get(this.url + '/busStation/111')
             .then((res) => {
@@ -233,17 +306,42 @@
         }
       },
       created() {
+        this.readAdData();
         this.readWeatherData();
         this.readBusData();
       },
       mounted() {
         var i = 0;
+        var _this = this;
         this.timer = setInterval(() => {
           this.now = moment().format('HH:mm:ss');
           i++;
           if (i % 10 == 0) this.readBusData();
-          if (i % 86400 == 0) this.readWeatherData();
+          if (i % 1800 == 0) this.readWeatherData();
         }, 1000);
+
+        setTimeout(() => {
+          var imgsWrp = document.querySelector(".imgsWrp"),
+            imgsLi = imgsWrp.querySelectorAll("li"),
+            markSpan = document.querySelector(".carousel span"),
+            i = 0;
+
+          // 这里根据图片数量分别算出li的宽度和ul的宽度
+          imgsWrp.style.width = _this.imgsLens * 100 + "%";
+          var widthLi = 100 / _this.imgsLens + "%";
+          for (var ils = 0; ils < _this.imgsLens; ils++) {
+            imgsLi[ils].style.width = widthLi;
+          }
+          // 定时函数，每3秒变更i，同时变换ul要transform的值
+          setInterval(function () {
+            console.log(_this.imgsLens);
+            i < _this.imgsLens - 1 ? i++ : i = 0;
+            imgsWrp.style.transform = "translateX(-" + 100 / _this.imgsLens * i + "%)";
+            markSpan.textContent = i + 1
+          }, 5000)
+        }, 100);
+
+
       },
       beforeDestroy() {
         if (this.timer) {
@@ -252,7 +350,6 @@
       },
     });
   </script>
-
 </body>
 
 </html>
