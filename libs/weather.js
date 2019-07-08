@@ -3,11 +3,11 @@ const request = require('request');
 const _ = require("underscore");
 const Pole = require('../models/pole');
 
-const appKey = 'c2f74c681235d2e3630000717f39cdbb';
+const appKey = '4b406925870a76031354d7aa6250cae9';
 const url = 'http://v.juhe.cn/weather';
 
-const url_head = "http://139.159.254.213:3000/images/g2/40x40/day/";
-const GATHER_CYCLE = 12; // 六小时采集一次
+const url_head = "http://www.csiiot.com/images/g2/40x40/day/";
+const GATHER_CYCLE = 6; // 六小时采集一次
 
 exports.weatherInfo = (id, futureDay, ret) => {
   Pole.findOne({

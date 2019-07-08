@@ -1,6 +1,6 @@
-const moment = require('moment');
-const net = require('net');
-const Pole = require('../models/pole');
+const moment = require("moment");
+const net = require("net");
+const Pole = require("../models/pole");
 
 const U16_OFFSET = 2;
 const ID_OFFSET = 5;
@@ -15,56 +15,74 @@ const WIND_SPEED_OFFSET = NOISE_OFFSET + U16_OFFSET;
 const WIND_DIRECTION_OFFSET = WIND_SPEED_OFFSET + U16_OFFSET;
 const PM25_OFFSET = WIND_DIRECTION_OFFSET + U16_OFFSET;
 
-const RET_SUCC_CODE = 'fefefe680200e2e4';
-const default_head = Buffer.from('fefefe68', 'hex');
+const RET_SUCC_CODE = "fefefe680200e2e4";
+const default_head = Buffer.from("fefefe68", "hex");
 
 const server = net.createServer();
 
-server.on('connection', function (socket) {
+server.on("connection", function(socket) {
   socket.setKeepAlive(true, 1000);
-  console.log('NEW SOCKET:' + JSON.stringify(socket.address()));
-  socket.on('data', function (data) {
-    const buf = Buffer.from(data, 'hex');
+  console.log("NEW SOCKET:" + JSON.stringify(socket.address()));
+  socket.on("data", function(data) {
+    const buf = Buffer.from(data, "hex");
     console.log(buf);
-    const id = buf.toString('hex').substr(0, ID_OFFSET * 2).toUpperCase()
+    if (buf.length < PM25_OFFSET) return;
+    const id = buf
+      .toString("hex")
+      .substr(0, ID_OFFSET * 2)
+      .toUpperCase();
 
-    if (buf.compare(default_head, 0, default_head.length,
-        ID_OFFSET, ID_OFFSET + HEAD_OFFSET)) {
-      console.log('The message head is not right.[' + default_head.toString('hex') + ']');
+    if (
+      buf.compare(
+        default_head,
+        0,
+        default_head.length,
+        ID_OFFSET,
+        ID_OFFSET + HEAD_OFFSET
+      )
+    ) {
+      console.log(
+        "The message head is not right.[" + default_head.toString("hex") + "]"
+      );
       return;
     }
-    Pole.findOne({
-      "airBox.id": id
-    }, function (err, pole) {
-      if (!err) {
-        pole.airBox.realtime = {
-          "temperature": (buf.readInt16BE(TEMPERATURE_OFFSET) / 10).toFixed(1) + "℃",
-          "humidity": (buf.readInt16BE(HUMIDITY_OFFSET) / 10).toFixed(1) + "rh%",
-          "pressure": buf.readInt16BE(PRESSURE_OFFSET) + "hPa",
-          "noise": (buf.readInt16BE(NOISE_OFFSET) / 10).toFixed(1) + "db",
-          "wind-speed": (buf.readInt16BE(WIND_SPEED_OFFSET) / 10).toFixed(1) + "m/s",
-          "wind-direction": buf.readInt16BE(WIND_DIRECTION_OFFSET) + "°",
-          "pm25": (buf.readInt16BE(PM25_OFFSET)).toFixed(1) + "ug/m3"
-        };
-        pole.airBox.timestamp = moment().format();
-        console.log(JSON.stringify(pole.airBox));
-        pole.save();
-      } else {
-        console.log(err);
+    Pole.findOne(
+      {
+        "airBox.id": id
+      },
+      function(err, pole) {
+        if (!err) {
+          pole.airBox.realtime = {
+            temperature:
+              (buf.readInt16BE(TEMPERATURE_OFFSET) / 10).toFixed(1) + "℃",
+            humidity:
+              (buf.readInt16BE(HUMIDITY_OFFSET) / 10).toFixed(1) + "rh%",
+            pressure: buf.readInt16BE(PRESSURE_OFFSET) + "hPa",
+            noise: (buf.readInt16BE(NOISE_OFFSET) / 10).toFixed(1) + "db",
+            "wind-speed":
+              (buf.readInt16BE(WIND_SPEED_OFFSET) / 10).toFixed(1) + "m/s",
+            "wind-direction": buf.readInt16BE(WIND_DIRECTION_OFFSET) + "°",
+            pm25: buf.readInt16BE(PM25_OFFSET).toFixed(1) + "ug/m3"
+          };
+          pole.airBox.timestamp = moment().format();
+          console.log(JSON.stringify(pole.airBox));
+          pole.save();
+        } else {
+          console.log(err);
+        }
       }
-    });
-    socket.write(Buffer.from(RET_SUCC_CODE, 'hex'));
-
+    );
+    socket.write(Buffer.from(RET_SUCC_CODE, "hex"));
   });
-  socket.on('close', function () {
-    console.log('SOCKET CLOSED');
+  socket.on("close", function() {
+    console.log("SOCKET CLOSED");
   });
-})
+});
 
-server.on('error', function (err) {
-  console.log('SERVER ERROR:', err.message);
-})
+server.on("error", function(err) {
+  console.log("SERVER ERROR:", err.message);
+});
 
 server.listen(8234, () => {
-  console.log('SERVER WORKING on 8234 ');
+  console.log("SERVER WORKING on 8234 ");
 });

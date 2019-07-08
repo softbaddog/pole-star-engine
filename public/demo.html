@@ -124,7 +124,8 @@
               <td colspan="2">
                 <div v-for="busStation in busStations" class="col-md-12" v-bind:id="'canvas-container-' + busStation.id"
                   style="padding: 0; margin: 0; height: 150px;">
-                  <h3>{{ busStation.name }} | <small>始：{{ busStation.startTime }}&nbsp; 末：{{ busStation.endTime }}</small></h3>
+                  <h3>{{ busStation.name }} | <small>始：{{ busStation.startTime }}&nbsp;
+                      末：{{ busStation.endTime }}</small></h3>
                   <h5>{{ busStation.info }}</h5>
                   <canvas v-bind:id="'canvas-' + busStation.id" style="border: 0px solid #0f0; margin: 0; padding: 0">
                     你的浏览器还不支持canvas
@@ -143,8 +144,8 @@
       data: {
         now: moment().format('HH:mm:ss'),
         //url: "http://localhost:3000",
-        url: "http://139.159.254.213:3000",
-        //url: "http://95a2c0c849464cefb25a713d3a1bbce9.apigw.cn-south-1.huaweicloud.com",
+        url: "http://139.159.186.60:3000",
+        //url: "http://api.csiiot.com",
         imgsArray: [],
         imgsLens: 2,
         weather: {
