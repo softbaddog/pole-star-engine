@@ -35,7 +35,7 @@ let getBusLocation = (station, line, maxShowBus, ratioDiff) => {
         json: true
       },
       (err, res, body) => {
-        if (!err && body && res.statusCode === 200) {
+        if (!err && body && body.code == 200 && res.statusCode === 200) {
           let info = "车辆已收班";
           let busLocationList = [];
           let [hStart, mStart] = line.startTime.split(":");
@@ -58,7 +58,7 @@ let getBusLocation = (station, line, maxShowBus, ratioDiff) => {
               moment({
                 hour: hEnd,
                 minute: mEnd
-              })
+              }).add(1, "hour")
             )
           ) {
             for (const bus of body.data.busLocation) {
@@ -72,10 +72,13 @@ let getBusLocation = (station, line, maxShowBus, ratioDiff) => {
             busLocationList.sort((first, second) => {
               return (
                 newArr.indexOf(first.nextStation) -
-                  newArr.indexOf(second.nextStation) ||
-                first.nextStationRatio - second.nextStationRatio ||
-                first.time - second.time
+                newArr.indexOf(second.nextStation)
               );
+            });
+            busLocationList.sort((first, second) => {
+              if (first.nextStation == second.nextStation) {
+                return first.nextStationRatio - second.nextStationRatio;
+              }
             });
             let emergeNaborBus = (elem, index, array) => {
               if (
@@ -93,16 +96,26 @@ let getBusLocation = (station, line, maxShowBus, ratioDiff) => {
               }
             };
             busLocationList.forEach(emergeNaborBus);
-
-            if (
-              busLocationList[0].time == 0 &&
-              busLocationList[0].nextStationRatio == 0
-            ) {
-              info = "车辆已抵达";
-            } else if (busLocationList[0].time < 60) {
-              info = "1分钟内抵达";
-            } else if (busLocationList[0].time < 120) {
-              info = "2分钟内抵达";
+            console.log(busLocationList);
+            if (busLocationList[0].nextStation == stationList[station]) {
+              if (
+                // busLocationList[0].time == 0 &&
+                busLocationList[0].nextStationRatio == 0
+              ) {
+                info = "车辆已抵达";
+              } else if (
+                busLocationList[0].nextStationRatio < 10 ||
+                busLocationList[0].time < 60
+              ) {
+                info = "1分钟内抵达";
+              } else if (
+                busLocationList[0].nextStationRatio < 20 ||
+                busLocationList[0].time < 120
+              ) {
+                info = "2分钟内抵达";
+              } else {
+                info = "大于2分钟，请稍等";
+              }
             } else {
               info = "大于2分钟，请稍等";
             }
